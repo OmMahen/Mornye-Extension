@@ -25,7 +25,7 @@ for (const [country, domain, currency] of [
   ['GB', 'music.amazon.co.uk', 'GBP'],
   ['JP', 'music.amazon.co.jp', 'JPY'],
 ]) {
-  test(`Amazon Home selects ${country} without changing the download catalog`, () => {
+  test(`Amazon catalog selects ${country} for Home and resource lookups`, () => {
     const calls = [];
     const { context, extension } = runtime('amazon', (url, options) => {
       calls.push({ url, options });
@@ -50,8 +50,8 @@ for (const [country, domain, currency] of [
     assert.equal(result.success, true);
     assert.equal(result.sections.length, 1);
     assert.ok(calls.some(call => call.url.startsWith(`https://${domain}/config.json`)));
-    assert.equal(vm.runInContext('_currentContext.host', context), 'music.amazon.com');
-    assert.equal(context.getResourceContext('album', 'B000000001').host, 'music.amazon.com');
+    assert.equal(vm.runInContext('_currentContext.host', context), domain);
+    assert.equal(context.getResourceContext('album', 'B000000001').host, domain);
   });
 }
 
@@ -59,7 +59,7 @@ test('Amazon restores the normal context when a regional Home request fails', ()
   const { context, extension } = runtime('amazon', () => { throw new Error('offline'); });
   extension.initialize({ homeCountry: 'JP' });
   assert.equal(extension.getHomeFeed().success, false);
-  assert.equal(vm.runInContext('_currentContext.host', context), 'music.amazon.com');
+  assert.equal(vm.runInContext('_currentContext.host', context), 'music.amazon.co.jp');
 });
 
 test('YouTube Home sends the selected country and isolates its cache', () => {
