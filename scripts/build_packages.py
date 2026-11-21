@@ -34,7 +34,7 @@ def package(source):
             entry.external_attr = 0o100644 << 16
             archive.writestr(
                 entry, ((ROOT if filename in licenses else source) / filename).read_bytes(),
-                compress_type=ZIP_STORED if source.name == 'amazon' else ZIP_DEFLATED,
+                compress_type=ZIP_STORED if source.name in ('amazon', 'amazon-jp') else ZIP_DEFLATED,
                 compresslevel=9,
             )
     return buffer.getvalue()
