@@ -1,0 +1,29 @@
+name: Amazon JP extension checks
+
+on:
+  push:
+    branches:
+      - feature/amazon-jp-catalog
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run provider tests
+        run: node --test tests/*.test.cjs
+      - name: Verify package and registry
+        run: |
+          python3 scripts/build_packages.py amazon-jp --check
+          python3 scripts/build_unified_registry.py --check
+      - name: Run registry tests
+        run: python3 -m unittest tests.test_registry_packages tests.test_unified_registry
