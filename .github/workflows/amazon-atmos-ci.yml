@@ -34,6 +34,16 @@ jobs:
           node-version: '22'
       - name: Provider regressions
         run: node --test tests/*.test.cjs
+      - name: Rebuild Amazon JP package
+        run: python3 scripts/build_packages.py amazon-jp
+      - name: Upload rebuilt Amazon JP package
+        uses: actions/upload-artifact@v4
+        with:
+          name: amazon-jp-build
+          path: |
+            extensions/amzn-jp.sflx
+            registry.json
+            registry-unified.json
       - name: Validate source-backed package bytes and registry hashes
         run: python3 scripts/build_packages.py --check
       - name: Validate every registry and packaged Python module
