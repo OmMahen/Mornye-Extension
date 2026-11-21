@@ -3868,6 +3868,7 @@ registerExtension({
   initialize: function(config) {
     var settings = config && config.settings ? config.settings : (config || {});
     _homeCountry = String(settings.homeCountry || "JP").trim().toUpperCase();
+    _currentContext = createAmazonContext(CONFIG.musicBaseURL);
     L("info", "[Amazon] Extension v" + EXTENSION_VERSION + " init");
     initSession();
     return true;
