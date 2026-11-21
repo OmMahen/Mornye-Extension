@@ -11,17 +11,17 @@ var CONFIG = {
   resourceCacheMaxEntries: 500,
   maxResults: 15,
   skillBaseURL: "https://na.mesk.skill.music.a2z.com/api",
-  musicBaseURL: "https://music.amazon.co.jp",
+  musicBaseURL: "https://music.amazon.com",
   deviceType: "A16ZV8BU3SN1N3",
   appVersion: "1.0.9678.0",
   deviceFamily: "WebPlayer",
   deviceModel: "WEBPLAYER",
-  musicTerritory: "JP"
+  musicTerritory: "US"
 };
 
 // Logged so an exported log names the running package. Kept equal to
 // manifest.json by tests/amazon_session.test.cjs.
-var EXTENSION_VERSION = "2.3.20";
+var EXTENSION_VERSION = "2.3.19";
 
 var USER_AGENTS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
@@ -309,20 +309,20 @@ var _session = {
 
 var _currentContext = {
   musicBaseURL: CONFIG.musicBaseURL,
-  host: "music.amazon.co.jp",
+  host: "music.amazon.com",
   timeZone: "UTC"
 };
 
 var _resourceContexts = new Map();
 var _resourceHints = new Map();
-var _homeCountry = "JP";
+var _homeCountry = "US";
 
 function createHomeFeedContext() {
   var domains = {
     US: "com", GB: "co.uk", JP: "co.jp", DE: "de", FR: "fr",
     IT: "it", ES: "es", IN: "in", BR: "com.br", MX: "com.mx", AU: "com.au"
   };
-  var host = "music.amazon." + (domains[_homeCountry] || domains.JP);
+  var host = "music.amazon." + (domains[_homeCountry] || domains.US);
   return {
     musicBaseURL: "https://" + host,
     host: host,
@@ -398,15 +398,10 @@ function createAmazonContext(rawURL) {
     } catch (e3) {}
   }
 
-  // Resolve every supported regional link against the selected catalog.
-  // The default catalog is Japan; the setting can select another region.
-  // Keep resource IDs until Amazon returns the corresponding regional IDs.
+  // Resolve shared regional links in the same catalog used for downloads.
+  // Keep their resource IDs until Amazon returns the corresponding IDs.
   if (AMAZON_MUSIC_HOST_REGEX.test(host)) {
-    var domains = {
-      US: "com", GB: "co.uk", JP: "co.jp", DE: "de", FR: "fr",
-      IT: "it", ES: "es", IN: "in", BR: "com.br", MX: "com.mx", AU: "com.au"
-    };
-    host = "music.amazon." + (domains[_homeCountry] || domains.JP);
+    host = "music.amazon.com";
     base = "https://" + host;
   }
 
@@ -3821,7 +3816,7 @@ function formatHomeFeedData(data) {
       // Remember context for later resource fetching
       if (itemType === "track" || itemType === "album") {
         rememberResourceContext(itemType === "track" ? "track" : "album", itemId,
-          _currentContext || createAmazonContext(CONFIG.musicBaseURL));
+          createAmazonContext(CONFIG.musicBaseURL));
       }
     }
 
@@ -3867,8 +3862,7 @@ function completeGrant() {
 registerExtension({
   initialize: function(config) {
     var settings = config && config.settings ? config.settings : (config || {});
-    _homeCountry = String(settings.homeCountry || "JP").trim().toUpperCase();
-    _currentContext = createAmazonContext(CONFIG.musicBaseURL);
+    _homeCountry = String(settings.homeCountry || "US").trim().toUpperCase();
     L("info", "[Amazon] Extension v" + EXTENSION_VERSION + " init");
     initSession();
     return true;
