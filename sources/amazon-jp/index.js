@@ -239,7 +239,7 @@ function extractResolvedTrackASIN(rawURL) {
 }
 
 function resolvedAmazonMetadataASIN(metadata) {
-  if (!metadata || metadata.provider_id !== "amazon") return null;
+  if (!metadata || metadata.provider_id !== "amazon-jp") return null;
   var asin = normalizeASIN(metadata.id);
   return asin && extractResolvedTrackASIN(metadata.external_urls || metadata.external_url) === asin ? asin : null;
 }
@@ -378,7 +378,7 @@ function defaultCurrencyForHost(host) {
 
 function createAmazonContext(rawURL) {
   var base = CONFIG.musicBaseURL;
-  var host = "music.amazon.com";
+  var host = "music.amazon.co.jp";
 
   if (rawURL) {
     try {
@@ -581,7 +581,7 @@ function buildHeaders(context, pageUrl) {
     "x-amzn-device-time-zone": ctx.timeZone || "UTC",
     "x-amzn-timestamp": String(Date.now()),
     "x-amzn-csrf": csrf,
-    "x-amzn-music-domain": ctx.host || "music.amazon.com",
+    "x-amzn-music-domain": ctx.host || "music.amazon.co.jp",
     "x-amzn-referer": "",
     "x-amzn-affiliate-tags": "",
     "x-amzn-ref-marker": "",
@@ -3101,7 +3101,7 @@ function customSearchSync(query, options) {
   if (options && options.filter) filter = options.filter;
   if (options && options.context) context = options.context;
 
-  var cacheRegion = String((context && (context.host || context.musicTerritory)) || CONFIG.musicTerritory || "US").toLowerCase();
+  var cacheRegion = String((context && (context.host || context.musicTerritory)) || CONFIG.musicTerritory || "JP").toLowerCase();
   var cacheKey = "search_" + cacheRegion + "_" + query + "_" + (filter || "all");
   var cached = cacheGet(cacheKey);
   if (cached) return cached;
