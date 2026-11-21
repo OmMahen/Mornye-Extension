@@ -50,7 +50,7 @@
       "version": "1.0.0",
       "description": "Amazon Music Japan catalog metadata and lossless/Dolby Atmos downloads.",
       "download_url": "https://raw.githubusercontent.com/OmMahen/Mornye-Extension/feature/amazon-jp-catalog/extensions/amzn-jp.sflx",
-      "sha256": "be859a23c0c95342936aa5639c3803ee5964b42330bebfdb205212b73acd9d91",
+      "sha256": "412223085a810e19f4e75ffce8787eb1a972b412151243db12d86e3eaf94a665",
       "category": "download",
       "tags": [
         "amazon",
