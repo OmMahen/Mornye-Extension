@@ -21,7 +21,7 @@ on:
       - '.github/workflows/amazon-atmos-ci.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   source-and-package:
