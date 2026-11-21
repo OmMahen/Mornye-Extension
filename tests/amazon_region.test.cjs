@@ -25,7 +25,7 @@ function runtime() {
 function metadataResponse(type, id, name) {
   const resource = type === 'MusicAlbum' ? 'albums' : 'tracks';
   const schema = {
-    '@type': type, '@id': `https://music.amazon.com/${resource}/${id}`,
+    '@type': type, '@id': `https://music.amazon.co.jp/${resource}/${id}`,
     name, byArtist: { name: 'Artist' }, duration: 'PT3M',
   };
   if (type === 'MusicAlbum') schema.numTracks = 1;
@@ -53,9 +53,9 @@ for (const domain of ['com', 'in', 'co.jp', 'co.uk', 'de', 'fr', 'it', 'es', 'co
         }) };
       }
       const headers = JSON.parse(JSON.parse(options.body).headers);
-      assert.equal(headers['x-amzn-music-domain'], 'music.amazon.com');
-      assert.equal(headers['x-amzn-currency-of-preference'], 'USD');
-      assert.equal(options.headers.Origin, 'https://music.amazon.com');
+      assert.equal(headers['x-amzn-music-domain'], 'music.amazon.co.jp');
+      assert.equal(headers['x-amzn-currency-of-preference'], 'JPY');
+      assert.equal(options.headers.Origin, 'https://music.amazon.co.jp');
       const response = metadataResponse('MusicAlbum', resolvedAlbum, 'Original Album');
       return { ok: true, status: 200, text: () => response.rawText };
     };
@@ -63,7 +63,7 @@ for (const domain of ['com', 'in', 'co.jp', 'co.uk', 'de', 'fr', 'it', 'es', 'co
     assert.equal(result.album.id, resolvedAlbum);
     assert.equal(result.tracks[0].id, resolvedTrack);
     assert.equal(result.tracks[0].album_id, resolvedAlbum);
-    assert.equal(seen[0].url, 'https://music.amazon.com/config.json?skipToken=false&clientApplication=skyfire');
+    assert.equal(seen[0].url, 'https://music.amazon.co.jp/config.json?skipToken=false&clientApplication=skyfire');
     assert.equal(seen[0].options.method, 'POST');
   });
 }
@@ -74,7 +74,7 @@ test('regional album track links preserve trackAsin when normalizing the catalog
   assert.equal(parsed.type, 'track');
   assert.equal(parsed.id, sourceTrack);
   assert.equal(parsed.albumId, sourceAlbum);
-  assert.equal(parsed.context.musicBaseURL, 'https://music.amazon.com');
+  assert.equal(parsed.context.musicBaseURL, 'https://music.amazon.co.jp');
 });
 
 test('resolved track metadata uses the ASIN from the canonical track URL', () => {
@@ -83,7 +83,7 @@ test('resolved track metadata uses the ASIN from the canonical track URL', () =>
   context.callShowHome = () => response;
   const result = extension.getTrack(sourceTrack);
   assert.equal(result.id, resolvedTrack);
-  assert.equal(result.external_urls, `https://music.amazon.com/tracks/${resolvedTrack}`);
+  assert.equal(result.external_urls, `https://music.amazon.co.jp/tracks/${resolvedTrack}`);
   assert.equal(result.duration_ms, 180000);
 });
 
@@ -105,8 +105,8 @@ test('album parsing retains each track ISRC without copying a different recordin
   const response = metadataResponse('MusicAlbum', resolvedAlbum, 'Original Album');
   const schema = JSON.parse(response.data.methods[0].innerHTML);
   schema.track = [
-    { '@type': 'MusicRecording', '@id': `https://music.amazon.com/tracks/${sourceTrack}`, name: 'Signal (Remix)', isrcCode: 'INT130800416' },
-    { '@type': 'MusicRecording', '@id': `https://music.amazon.com/tracks/${resolvedTrack}`, name: 'Signal', isrcCode: 'INT130800412' },
+    { '@type': 'MusicRecording', '@id': `https://music.amazon.co.jp/tracks/${sourceTrack}`, name: 'Signal (Remix)', isrcCode: 'INT130800416' },
+    { '@type': 'MusicRecording', '@id': `https://music.amazon.co.jp/tracks/${resolvedTrack}`, name: 'Signal', isrcCode: 'INT130800412' },
   ];
   response.data.methods[0].innerHTML = JSON.stringify(schema);
   response.rawText = JSON.stringify(response.data);
@@ -117,10 +117,10 @@ test('album parsing retains each track ISRC without copying a different recordin
 test('album and artist URLs are not accepted as resolved track IDs', () => {
   const { context } = runtime();
   for (const resource of ['albums', 'artists']) {
-    assert.equal(context.extractResolvedTrackASIN(`https://music.amazon.com/${resource}/${resolvedTrack}`), null);
+    assert.equal(context.extractResolvedTrackASIN(`https://music.amazon.co.jp/${resource}/${resolvedTrack}`), null);
   }
-  assert.equal(context.extractResolvedTrackASIN(`https://music.amazon.com.evil.test/tracks/${resolvedTrack}`), null);
-  assert.equal(context.parseAmazonMusicURL(`https://music.amazon.com.evil.test/albums/${sourceAlbum}`), null);
+  assert.equal(context.extractResolvedTrackASIN(`https://music.amazon.co.jp.evil.test/tracks/${resolvedTrack}`), null);
+  assert.equal(context.parseAmazonMusicURL(`https://music.amazon.co.jp.evil.test/albums/${sourceAlbum}`), null);
 });
 
 test('direct downloads honor canonical IDs in resolved Amazon metadata', () => {
@@ -128,7 +128,7 @@ test('direct downloads honor canonical IDs in resolved Amazon metadata', () => {
   let requestedASIN;
   context.getTrack = () => ({
     id: resolvedTrack, name: 'Signal', artists: 'Artist', provider_id: 'amazon',
-    external_urls: `https://music.amazon.com/tracks/${resolvedTrack}`,
+    external_urls: `https://music.amazon.co.jp/tracks/${resolvedTrack}`,
   });
   context.callZarzMedia = asin => { requestedASIN = asin; return { streamUrl: 'https://audio.example.test/song.flac' }; };
   context.file = { download: (_url, output) => ({ success: true, path: output }) };
@@ -165,7 +165,7 @@ test('404 catalog recovery uses one direct request in the canonical catalog', ()
   const requests = [];
   context.callDisplayCatalogTrack = (asin, catalog, retried) => {
     requests.push(asin);
-    assert.equal(catalog.host, 'music.amazon.com');
+    assert.equal(catalog.host, 'music.amazon.co.jp');
     assert.equal(retried, true);
     return metadataResponse('MusicRecording', resolvedTrack, 'Signal');
   };
@@ -181,7 +181,7 @@ function catalogNotFound() {
 function resolvedMetadata() {
   return {
     id: resolvedTrack, name: 'Signal', artists: 'Artist', provider_id: 'amazon',
-    external_urls: `https://music.amazon.com/tracks/${resolvedTrack}`,
+    external_urls: `https://music.amazon.co.jp/tracks/${resolvedTrack}`,
   };
 }
 
@@ -205,8 +205,8 @@ test('successful prepared downloads do not repeat metadata lookup', () => {
 
 for (const metadata of [
   null,
-  { ...resolvedMetadata(), id: sourceTrack, external_urls: `https://music.amazon.com/tracks/${sourceTrack}` },
-  { ...resolvedMetadata(), external_urls: `https://music.amazon.com/tracks/${sourceTrack}` },
+  { ...resolvedMetadata(), id: sourceTrack, external_urls: `https://music.amazon.co.jp/tracks/${sourceTrack}` },
+  { ...resolvedMetadata(), external_urls: `https://music.amazon.co.jp/tracks/${sourceTrack}` },
   { ...resolvedMetadata(), provider_id: 'other-provider' },
 ]) {
   test(`404 does not retry without a different resolved Amazon ID: ${JSON.stringify(metadata)}`, () => {
